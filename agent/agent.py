@@ -21,7 +21,7 @@ system_instruction = f"Você é um assistente virtual da provedora de internet P
 
 async def summary_to_model(state: MyState):
     if(state.get("summary", "") == ""):
-        summary = await model.ainvoke([{"role": "user", "content": state['message']}])
+        summary = await model.ainvoke([{"role": "assistant", "content": f"Mensagem do usuário: {state['message']}\nBaseado nessa mensagem, responda apenas com um título breve para a conversa."}])
     else:
         summary = await model.ainvoke([{"role": "assistant", "content": f"Prompt atual: {state['message']}\nResumo da conversa até agora: {state['summary']}.\nBaseado nessa conversa, crie um resumo conciso levando em consideração os dados mais importantes."}])
     return {"summary":summary.content}
