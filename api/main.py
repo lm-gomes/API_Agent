@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-import httpx
 from agent.agent import prompt_to_agent
 app = FastAPI()
 

@@ -6,7 +6,7 @@ model = ChatGroq(model="openai/gpt-oss-20b", temperature=0)
 
 
 class PromptType(TypedDict):
-    type: Literal['chat', 'consulta_plano']
+    type: Literal['chat', 'consulta_plano', 'pagar_fatura']
 
 
 class MyState(TypedDict):
@@ -27,7 +27,16 @@ async def summary_to_model(state: MyState):
     return {"summary":summary.content}
 
 async def router(state: MyState):
-    classification_prompt = f"Resumo da conversa: {state['summary']} \n Mensagem do usuário: {state['message']} \n Se o usuário informar que deseja consultar seu plano de internet atual, classifique como 'consulta_plano'.\nCaso não seja necessário acessar nenhuma informação no banco de dados, classifique como 'chat'. Seja rígido e aceite apenas o que tiver ligação com serviço de internet.\n"
+    classification_prompt = f'''Resumo da conversa: <resumo>{state['summary']}</resumo>
+    Prompt do usuário: <prompt>{state['message']}</prompt>
+
+    <instrucao>
+    Se o usuário informar que deseja consultar seu plano de internet atual, classifique como 'consulta_plano'.
+    Se o usuário informar que deseja realizar o pagamento de uma fatura, classifique como 'pagar_fatura'.
+    Caso não seja necessário acessar nenhuma informação no banco de dados, classifique como 'chat'.
+    Seja rígido e aceite apenas o que tiver relacionado à serviço de internet.
+    </instrucao>'''
+
     model_classifier = model.with_structured_output(PromptType)
     classification = await model_classifier.ainvoke([{"role": "system", "content": classification_prompt}])
     return {"classification": classification}
